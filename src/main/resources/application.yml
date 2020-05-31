@@ -1,0 +1,58 @@
+server:
+  port: 12211
+spring:
+  application:
+    name: consumer-service
+  redis:
+    host: 192.168.23.128
+    port: 6379
+    password: root
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 500
+        min-idle: 0
+    lettuce:
+      shutdown-timeout: 0
+  cloud:
+    consul:
+      discovery:
+        #是否需要将服务注册到consul 默认为true
+        register: true
+        #实例id（必须）服务名称+端口+ip地址
+        instance-id: product-${server.port}-${spring.cloud.client.ip-address}
+        #服务名称
+        service-name: ${spring.application.name}
+        #当前服务的ip地址（）
+        ip-address: ${spring.cloud.client.ip-address}
+        #指定开启IP地址注册，默认为true
+        prefer-ip-address: true
+      host: 192.168.23.128
+      port: 8500
+      enabled: true
+#feign:
+#  client:
+#    config:
+#      # 相当于Request.Options
+#      connectTimeout: 5000
+#      # 相当于Request.Options
+#      readTimeout: 5000
+#      # 配置Feign的日志级别，相当于代码配置方式中的Logger
+#      loggerLevel: full
+#      # Feign的错误解码器，相当于代码配置方式中的ErrorDecoder
+#      errorDecoder: com.example.SimpleErrorDecoder
+#      # 配置重试，相当于代码配置方式中的Retryer
+#      retryer: com.example.SimpleRetryer
+#      # 配置拦截器，相当于代码配置方式中的RequestInterceptor
+#      requestInterceptors:
+#        - com.example.FooRequestInterceptor
+#        - com.example.BarRequestInterceptor
+#      decode404: false
+##      #打印Feign日志
+#      product-service:
+#        loggerLevel: FULL
+
+logging:
+  level:
+    hwg: info

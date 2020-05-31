@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--注意文件名称不是logback.xml，想使用spring扩展profile支持，要以logback-spring.xml命名-->
+<configuration>
+	 
+	<springProperty scope="context" name="logging.path" source="logging.path" />
+	<springProperty scope="context" name="logging.level" source="logging.level.hwg" />
+	<springProperty scope="context" name="spring.application.name" source="spring.application.name" />
+    
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}|[%thread]|%5level|%logger{50}|%X{traceId}|%X{appLogNo}|${spring.application.name:-}|%X{entityCode}|%X{transName}|%X{sessionId}|%X{userId}|%msg%n</pattern>
+		</encoder>
+	</appender>
+		
+	<appender name="ERROR-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<append>true</append>
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>error</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+		<file>${logging.path}/${spring.application.name}/common-error.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${logging.path}/${spring.application.name}/common-error.%i.%d{yyyy-MM-dd}.zip</fileNamePattern>
+			<!-- 如果按天来回滚，则最大保存时间为30天，30天之前的都将被清理掉 -->
+			<maxHistory>30</maxHistory>
+			<!-- 日志总保存量为10GB -->
+			<totalSizeCap>10GB</totalSizeCap>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<!--文件达到 最大500MB时会被压缩和切割 -->
+				<maxFileSize>500MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}|[%thread]|%5level|%logger{50}|%X{traceId}|%X{appLogNo}|${spring.application.name:-}|%X{entityCode}|%X{transName}|%X{sessionId}|%X{userId}|%msg%n</pattern>
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+
+	<appender name="ROOT-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<append>true</append>
+		<file>${logging.path}/${spring.application.name}/default.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${logging.path}/${spring.application.name}/default.log.%i.%d{yyyy-MM-dd}.zip</fileNamePattern>
+			<!-- 如果按天来回滚，则最大保存时间为30天，30天之前的都将被清理掉 -->
+			<maxHistory>30</maxHistory>
+			<!-- 日志总保存量为30GB -->
+			<totalSizeCap>30GB</totalSizeCap>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<!--文件达到 最大500MB时会被压缩和切割 -->
+				<maxFileSize>500MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}|[%thread]|%5level|%logger{50}|%X{traceId}|%X{appLogNo}|${spring.application.name:-}|%X{entityCode}|%X{transName}|%X{sessionId}|%X{userId}|%msg%n</pattern>
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+	<appender name="ROOT-ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+		<discardingThreshold>5</discardingThreshold>
+		<queueSize>100000</queueSize>
+		<appender-ref ref="ROOT-APPENDER" />
+	</appender>
+
+	<logger name="org.apache.http" level="info" />
+	<logger name="hwg.dao.generate.mapper" level="info" />
+
+	<springProfile name="default,dev,test,uat,sit,bat,ops,sit2,sit3">
+		<root level="${logging.level}">
+			<appender-ref ref="STDOUT" />
+			<appender-ref ref="ROOT-APPENDER" />
+			<appender-ref ref="ERROR-APPENDER" />
+		</root>
+	</springProfile>
+	<springProfile name="pre,prod">	
+		<root level="${logging.level}">
+			<appender-ref ref="ROOT-ASYNC" />
+			<appender-ref ref="ERROR-APPENDER" />
+		</root>
+	</springProfile>
+		
+</configuration>
